@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+package main;
+
+option go_package = "github.com/grutenko/clipmux;main";
+
+service Handshake {
+    rpc Init(HandshakeInitRequest) returns (HandshakeInitResponse) {}
+    rpc Handshake(HandshakeRequest) returns (HandshakeResponse) {}
+}
+
+message HandshakeInitRequest {
+    string publicKey = 1;
+    string nonce = 2;
+}
+
+message HandshakeInitResponse {
+    string publicKey = 1;
+}
+
+message HandshakeEncryptedDataRequest {
+  string nonce = 1;
+  string token = 3;
+  bytes ca = 2;
+}
+
+message HandshakeEncryptedDataResponse {
+  string nonce = 1;
+  string token = 3;
+  bytes ca = 2;
+}
+
+message HandshakeRequest {
+  string nonce = 1;
+  bytes encryptedDataRequest = 2;
+}
+
+message HandshakeResponse {
+    string nonce = 1;
+    bytes encryptedDataResponse = 2;
+}
+
+service Rpc {}
+
+service Control {}
