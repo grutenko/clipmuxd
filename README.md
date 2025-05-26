@@ -2,6 +2,9 @@
 
 **clipmuxd** is a background service that receives and sends clipboard data to other devices.
 
+⚠️ **Work in Progress**
+This project is currently under active development. Features and APIs may change.
+
 ## How it works
 
 - **clipmuxd** runs in the background managing clipboard data synchronization between devices.
