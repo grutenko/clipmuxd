@@ -12,10 +12,14 @@ service Handshake {
 message HandshakeInitRequest {
     string publicKey = 1;
     string nonce = 2;
+    string deviceId = 3;
+    string deviceName = 4;
 }
 
 message HandshakeInitResponse {
     string publicKey = 1;
+    string deviceId = 2;
+    string deviceName = 3;
 }
 
 message HandshakeEncryptedDataRequest {
