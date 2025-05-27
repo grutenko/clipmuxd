@@ -1,5 +1,6 @@
 package main
 
 type AppCtx struct {
-	Config *Config
+	Config  *Config
+	Storage *Storage
 }

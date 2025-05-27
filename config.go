@@ -15,12 +15,11 @@ type Config struct {
 	SslClientCert string `yaml:"ssl_client_cert"`
 	SslClientKey  string `yaml:"ssl_client_key"`
 	JwtSecret     string `yaml:"jwt_secret"`
-
-	HandshakePort int `yaml:"handshake_port"`
-	CommonPort    int `yaml:"common_port"`
-	BroadcastPort int `yaml:"broadcast_port"`
-
-	DatabaseFile string `yaml:"database_file"`
+	HandshakePort int    `yaml:"handshake_port"`
+	CommonPort    int    `yaml:"common_port"`
+	BroadcastPort int    `yaml:"broadcast_port"`
+	DatabaseFile  string `yaml:"database_file"`
+	Socket        string `yaml:"socket"`
 }
 
 func fileExists(path string) bool {
@@ -53,6 +52,7 @@ func LoadConfig(path string) (*Config, error) {
 	cfg.SslClientCert = makeConfigRelativePath(path, cfg.SslClientCert)
 	cfg.SslClientKey = makeConfigRelativePath(path, cfg.SslClientKey)
 	cfg.DatabaseFile = makeConfigRelativePath(path, cfg.DatabaseFile)
+	cfg.Socket = makeConfigRelativePath(path, cfg.Socket)
 
 	if !fileExists(cfg.JwtSecret) {
 		return nil, fmt.Errorf("jwt secret file does not exist: %s", cfg.JwtSecret)
