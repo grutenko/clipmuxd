@@ -52,6 +52,7 @@ func LoadConfig(path string) (*Config, error) {
 	cfg.SslCaCert = makeConfigRelativePath(path, cfg.SslCaCert)
 	cfg.SslClientCert = makeConfigRelativePath(path, cfg.SslClientCert)
 	cfg.SslClientKey = makeConfigRelativePath(path, cfg.SslClientKey)
+	cfg.DatabaseFile = makeConfigRelativePath(path, cfg.DatabaseFile)
 
 	if !fileExists(cfg.JwtSecret) {
 		return nil, fmt.Errorf("jwt secret file does not exist: %s", cfg.JwtSecret)
