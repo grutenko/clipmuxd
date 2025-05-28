@@ -30,3 +30,50 @@ This project is currently under active development. Features and APIs may change
 ---
 
 clipmuxd provides secure clipboard exchange and data synchronization between local applications and remote devices.
+
+```
++------------------+                                         +---------------------+
+| Инициатор (A)    |                                         | Принимающий (B)      |
++------------------+                                         +---------------------+
+        |                                                        |
+        | --- InitHandshake(PubKeyA, UUID_A, Nonce) ------------>|
+        |                                                        |
+        | <--------- InitHandshake(PubKeyB, UUID_B) -------------|
+        |                                                        |
+        |           Проверка UUID_A в B:                          |
+        |           Если есть — B отменяет сессию                 |
+        |                                                        |
+        |           Проверка UUID_B в A:                          |
+        |           Если есть — A отправляет CancelSession(UUID_B) |
+        |                                                        |
+        | --- Генерация shared_key = DH(PrivA, PubB) ------------>|
+        |                                                        |
+        | --- Отправка Code(nonce) — сигнал показать код -------->|
+        |                                                        |
+        |                              Отображение кода:         |
+        |                              code_B = SHA256(shared_key)[:N]  |
+        |                                                        |
+        |                      Пользователь вводит код на A      |
+        |                                                        |
+        | --- Локальная генерация code_A = SHA256(shared_key)[:N] |
+        |                                                        |
+        | --- Сравнение введённого кода с code_A:                |
+        |         - если не совпадает — отмена сессии             |
+        |         - если совпадает — продолжаем                    |
+        |                                                        |
+        | --- A отправляет зашифрованные JWT_A и CertA ---------->|
+        |          (шифрование с использованием shared_key)       |
+        |                                                        |
+        |           B расшифровывает и добавляет JWT_A и CertA    |
+        |           в списки доверенных                           |
+        |                                                        |
+        | <--- B отправляет зашифрованные JWT_B и CertB ----------|
+        |          (шифрование с использованием shared_key)       |
+        |                                                        |
+        |           A расшифровывает и добавляет JWT_B и CertB    |
+        |           в списки доверенных                           |
+        |                                                        |
+        |                Доверие установлено, готово к mTLS      |
++------------------+                                         +---------------------+
+
+```
