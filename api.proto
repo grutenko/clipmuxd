@@ -5,9 +5,34 @@ package main;
 option go_package = "github.com/grutenko/clipmux;main";
 
 service Handshake {
+    // All methods are one-time use per session (per nonce).
+    // They cannot be invoked again after being sent.
+
+    // Init initializes a new handshake session.
+    // Check device Id and verify it's not already in use.
+    // If used return error and cancel session. Return recipient public key and device id.
+    // If recipient device id is used this session will be canceled.
     rpc Init(HandshakeInitRequest) returns (HandshakeInitResponse) {}
-    rpc Handshake(HandshakeRequest) returns (HandshakeResponse) {}
+    // Show code on recipient device.
+    // If user cancel this request return error and cancel session.
+    rpc Code(HandshakeCodeRequest) returns (HandshakeCodeResponse) {}
+    // Cancel cancels an ongoing handshake session.
+    rpc Cancel(HandshakeCancelRequest) returns (HandshakeCancelResponse) {}
+    // ExchangeTrust exchanges trust between two devices.
+    rpc ExchangeTrust(ExchangeTrustRequest) returns (ExchangeTrustResponse) {}
 }
+
+message HandshakeCancelRequest {
+    string nonce = 1;
+}
+
+message HandshakeCancelResponse {}
+
+message HandshakeCodeRequest {
+    string nonce = 1;
+}
+
+message HandshakeCodeResponse {}
 
 message HandshakeInitRequest {
     string publicKey = 1;
@@ -22,24 +47,27 @@ message HandshakeInitResponse {
     string deviceName = 3;
 }
 
-message HandshakeEncryptedDataRequest {
+message ExchangeTrustEncryptedDataRequest {
+  // During ExchangeTrust, the nonce is sent in plaintext to identify the session.
+  // The same nonce is included inside the encrypted payload to verify correct decryption
+  // and confirm the message belongs to the current session.
   string nonce = 1;
   string token = 3;
   bytes ca = 2;
 }
 
-message HandshakeEncryptedDataResponse {
+message ExchangeTrustEncryptedDataResponse {
   string nonce = 1;
   string token = 3;
   bytes ca = 2;
 }
 
-message HandshakeRequest {
+message ExchangeTrustRequest {
   string nonce = 1;
   bytes encryptedDataRequest = 2;
 }
 
-message HandshakeResponse {
+message ExchangeTrustResponse {
     string nonce = 1;
     bytes encryptedDataResponse = 2;
 }
