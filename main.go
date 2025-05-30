@@ -6,6 +6,8 @@ import (
 	"log"
 	"net"
 	"os"
+	"os/signal"
+	"syscall"
 
 	"database/sql"
 
@@ -15,7 +17,7 @@ import (
 )
 
 func mustOpenStorage(file string) *Storage {
-	db, err := sql.Open("sqlite3", fmt.Sprintf("file:%s?cache=shared&mode=rwc", file))
+	db, err := sql.Open("sqlite3", fmt.Sprintf("file:%s?cache=shared&mode=wal", file))
 	if err != nil {
 		panic(err)
 	}
@@ -40,8 +42,20 @@ func main() {
 		panic(err)
 	}
 	handshakeGrpcServer := grpc.NewServer()
-	handshakeHandler := NewHandshakeGrpcServer(&ctx, nil)
-	RegisterHandshakeServer(handshakeGrpcServer, handshakeHandler)
+	handshakeHandler := NewHandshakeGrpcServer(&ctx)
+	RegisterHandshakeServer(handshakeGrpcServer, &handshakeHandler)
+	defer handshakeGrpcServer.GracefulStop()
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+
+	done := make(chan bool, 1)
+
+	go func() {
+		<-sigChan
+		log.Println("Signal handled")
+		done <- true
+	}()
 
 	go func() {
 		log.Printf("Handshake server started :%d", config.HandshakePort)
@@ -50,23 +64,5 @@ func main() {
 		}
 	}()
 
-	if err := os.RemoveAll(config.Socket); err != nil {
-		log.Fatalf("failed to remove existing socket: %v", err)
-	}
-	controlListen, err := net.Listen("unix", config.Socket)
-	if err != nil {
-		panic(err)
-	}
-	controlGrpcServer := grpc.NewServer()
-	controlHandler := NewControlGrpcServer(storage)
-	RegisterControlServer(controlGrpcServer, controlHandler)
-
-	go func() {
-		log.Printf("Control server started %s", config.Socket)
-		if err := controlGrpcServer.Serve(controlListen); err != nil {
-			panic(err)
-		}
-	}()
-
-	select {}
+	<-done
 }
